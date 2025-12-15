@@ -1,22 +1,26 @@
 # ---- Build Stage ----
-# Use Maven base image from the Docker Hub
-FROM maven:3.8.3-openjdk-11-slim AS build
+# Build aplikacji przy użyciu Mavena i Javy 11
+FROM maven:3.9.6-eclipse-temurin-11 AS build
 
-# Set the current working directory inside the image
+# Katalog roboczy w kontenerze
 WORKDIR /app
 
-# Copy the source code to the container
-COPY src /app/src
-COPY pom.xml /app
+# Kopiujemy pliki projektu
+COPY pom.xml .
+COPY src ./src
 
-# Package the application
-RUN mvn clean install -DskipTests
+# Budujemy JAR (bez testów)
+RUN mvn clean package -DskipTests
 
-# ---- Deploy Stage ----
-FROM openjdk:11-jdk-slim
+# ---- Runtime Stage ----
+# Lekki obraz do uruchomienia aplikacji
+FROM eclipse-temurin:11-jre-jammy
 
-# Copy the built JAR from the build stage
-COPY --from=build /app/target/thymeleaf-0.0.1-SNAPSHOT.jar /app.jar
+# Katalog roboczy
+WORKDIR /app
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+# Kopiujemy JAR z etapu build
+COPY --from=build /app/target/thymeleaf-0.0.1-SNAPSHOT.jar app.jar
+
+# Uruchomienie aplikacji
+ENTRYPOINT ["java", "-jar", "app.jar"]
