@@ -25,11 +25,7 @@ jobs:
           vuln-type: 'os,library'
           format: 'table'
 
-      - name: Install Semgrep
-        run: |
-          python3 -m pip install --upgrade pip
-          sudo pip install semgrep
-
       - name: Run Semgrep SAST
-        run: |
-          semgrep --config p/security-audit --error --json .
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: p/security-audit
